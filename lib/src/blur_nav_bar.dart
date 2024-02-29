@@ -20,7 +20,8 @@ class BlurNavbar extends StatefulWidget {
     required this.items,
     this.currentIndex = 0,
     this.fontSize = 10,
-    this.iconSize = 40
+    this.iconSize = 40,
+    this.height
   })  : assert(items.length > 1 && items.length <= 5, '至少2个，至多5个'),
         assert(currentIndex >= 0 && currentIndex < items.length),
         super(key: key);
@@ -34,6 +35,7 @@ class BlurNavbar extends StatefulWidget {
   final List<BlurNavbarItem> items;
   final double fontSize;
   final double iconSize;
+  final double? height;
 
 
   @override
@@ -49,6 +51,7 @@ class _BlurNavbarState extends State<BlurNavbar> with SingleTickerProviderStateM
   double get iconSize => widget.iconSize;
   double get fontSize => widget.fontSize;
   Color? get selectedColor => widget.selectedColor;
+  double? get height => widget.height;
 
   int _previousIndex = 0;
   late final AnimationController _animation =
@@ -71,12 +74,12 @@ class _BlurNavbarState extends State<BlurNavbar> with SingleTickerProviderStateM
 
     final sColor = selectedColor ?? Theme.of(context).primaryColor;
     final double bottomPadding = MediaQuery.of(context).padding.bottom;
-    final double barHeight = 50 + bottomPadding;
+    final double barHeight = height != null ? height! : 50 + bottomPadding;
 
     final radius = Radius.circular(borderRadius);
 
     return Align(
-        alignment: Alignment.bottomCenter,
+        alignment: Alignment.center,
         child: AnimatedContainer(
           duration: Duration.zero,
           height: barHeight,
@@ -85,11 +88,6 @@ class _BlurNavbarState extends State<BlurNavbar> with SingleTickerProviderStateM
                 topLeft: radius,
                 topRight: radius
             ),
-            border: Border.all(
-                color: Colors.grey.withOpacity(0.35),
-                width: borderWidth,
-                strokeAlign: BorderSide.strokeAlignOutside
-              )
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.only(
@@ -97,18 +95,19 @@ class _BlurNavbarState extends State<BlurNavbar> with SingleTickerProviderStateM
                 topRight: radius
             ),
             child: Stack(children: [
-              Backdrop(
+              /*Backdrop(
                   controller: _animation,
-                  color: sColor,
+                  color: Colors.red,
                   width: itemWidth,
                   height: barHeight,
                   previousIndex: _previousIndex,
-                  selectedIndex: selectedIndex),
+                  selectedIndex: selectedIndex),*/
               Container(color: Colors.grey.withOpacity(0.2)),/*backdrop*/
               BackdropFilter(
-                blendMode: BlendMode.src,
-                filter: ImageFilter.blur(sigmaX: 26, sigmaY: 26),
+                blendMode: BlendMode.multiply,
+                filter: ImageFilter.blur(sigmaX: 25, sigmaY: 25, tileMode: TileMode.decal),
                 child: Container(
+                  alignment: Alignment.topCenter,
                   width: double.infinity,
                   color: (() {
                     final lightColor = Colors.white.withOpacity(.2);
@@ -134,13 +133,13 @@ class _BlurNavbarState extends State<BlurNavbar> with SingleTickerProviderStateM
                   ),
                 ),
               ),
-              Cursor(
-                color: sColor,
-                width: itemWidth,
-                controller: _animation,
-                previousIndex: _previousIndex,
-                selectedIndex: selectedIndex,
-              ),
+              // Cursor(
+              //   color: sColor,
+              //   width: itemWidth,
+              //   controller: _animation,
+              //   previousIndex: _previousIndex,
+              //   selectedIndex: selectedIndex,
+              // ),
             ]),
           ),
         ));
@@ -160,7 +159,6 @@ class _BlurNavbarState extends State<BlurNavbar> with SingleTickerProviderStateM
       child: Container(
         width: width,
         color: Colors.transparent,
-        alignment: Alignment.center,
         child: Column(
           children: [
             Container(
@@ -168,8 +166,9 @@ class _BlurNavbarState extends State<BlurNavbar> with SingleTickerProviderStateM
               height: iconSize,
               alignment: Alignment.bottomCenter,
               child: item.icon!,
+              padding: EdgeInsets.only(bottom: item.paddingBottom ?? 0),
             ),
-            const SizedBox(height: 3),
+            /*const SizedBox(height: 5),
             Text(
               item.title ?? "",
               textAlign: TextAlign.center,
@@ -199,7 +198,7 @@ class _BlurNavbarState extends State<BlurNavbar> with SingleTickerProviderStateM
                 ]
               ),
               overflow: TextOverflow.ellipsis,
-            )
+            ),*/
           ],
         ),
       ),
